@@ -112,6 +112,14 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Routes explicites pour chaque page HTML
+const pagesHTML = ['cuisine', 'serveur', 'admin', 'qrcodes'];
+pagesHTML.forEach(page => {
+  app.get('/' + page, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', page + '.html'));
+  });
+});
+
 // ── Auth admin simple ─────────────────────────────────────────
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 function authAdmin(req, res, next) {
