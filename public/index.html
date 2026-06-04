@@ -6,307 +6,116 @@
 <title>L'Espace Associés — Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --creme: #F5F0E8;
-    --brun:  #2C1A0E;
-    --brun2: #5C3D2E;
-    --or:    #B8860B;
-    --or2:   #D4A017;
-    --rouge: #8B1A1A;
-    --gris:  #9E9082;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--creme); color: var(--brun); font-family: 'Lato', sans-serif; font-weight: 300; min-height: 100vh; }
+  :root { --creme:#F5F0E8; --brun:#2C1A0E; --brun2:#5C3D2E; --or:#B8860B; --or2:#D4A017; --gris:#9E9082; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--creme); color:var(--brun); font-family:'Lato',sans-serif; font-weight:300; min-height:100vh; }
 
-  /* ══════════════════════════════
-     ÉCRAN CHOIX DE TABLE
-  ══════════════════════════════ */
-  #ecran-table {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 40px 24px;
-    background: var(--brun);
-  }
+  #ecran-table { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px 24px; background:var(--brun); }
+  .accueil-eyebrow { font-size:10px; letter-spacing:4px; color:var(--or); text-transform:uppercase; margin-bottom:10px; }
+  .accueil-titre { font-family:'Playfair Display',serif; font-size:30px; font-weight:400; color:var(--creme); text-align:center; margin-bottom:6px; }
+  .accueil-sous { font-size:11px; letter-spacing:2px; color:var(--gris); text-transform:uppercase; margin-bottom:48px; text-align:center; }
+  .table-question { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; color:var(--creme); text-align:center; margin-bottom:24px; }
+  .grille-tables { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; width:100%; max-width:360px; margin-bottom:32px; }
+  .btn-table { aspect-ratio:1; background:rgba(245,240,232,0.07); border:1px solid rgba(245,240,232,0.15); border-radius:10px; color:var(--creme); font-family:'Playfair Display',serif; font-size:20px; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; justify-content:center; }
+  .btn-table:hover, .btn-table.selectionne { background:var(--or); border-color:var(--or); color:var(--brun); transform:scale(1.06); }
+  .ou-separateur { font-size:11px; letter-spacing:2px; color:var(--gris); text-transform:uppercase; margin-bottom:20px; text-align:center; }
+  .saisie-manuelle { display:flex; gap:10px; width:100%; max-width:360px; margin-bottom:32px; }
+  .saisie-manuelle input { flex:1; background:rgba(245,240,232,0.08); border:1px solid rgba(245,240,232,0.2); border-radius:10px; color:var(--creme); font-family:'Playfair Display',serif; font-size:22px; text-align:center; padding:12px; outline:none; -moz-appearance:textfield; }
+  .saisie-manuelle input::-webkit-outer-spin-button, .saisie-manuelle input::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .saisie-manuelle input:focus { border-color:var(--or); }
+  .btn-valider { background:var(--or); color:var(--brun); border:none; border-radius:10px; padding:12px 22px; font-family:'Lato',sans-serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; opacity:0.4; pointer-events:none; transition:all 0.2s; }
+  .btn-valider.actif { opacity:1; pointer-events:auto; }
+  .msg-erreur { color:#e88; font-size:13px; min-height:18px; text-align:center; margin-top:-16px; margin-bottom:16px; }
 
-  .accueil-eyebrow {
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--or);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .accueil-titre {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px;
-    font-weight: 400;
-    color: var(--creme);
-    text-align: center;
-    margin-bottom: 6px;
-  }
-  .accueil-sous {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--gris);
-    text-transform: uppercase;
-    margin-bottom: 48px;
-    text-align: center;
-  }
+  #ecran-menu { display:none; }
+  #chargement { display:none; position:fixed; inset:0; background:var(--brun); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+  #chargement.visible { display:flex; }
+  .spinner { width:40px; height:40px; border:3px solid rgba(184,134,11,0.3); border-top-color:var(--or); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .chargement-texte { color:var(--creme); font-size:14px; letter-spacing:2px; text-transform:uppercase; }
 
-  .table-question {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    font-style: italic;
-    color: var(--creme);
-    text-align: center;
-    margin-bottom: 24px;
-  }
+  header { background:var(--brun); padding:28px 20px 22px; text-align:center; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(44,26,14,0.25); }
+  .header-eyebrow { font-size:10px; letter-spacing:4px; color:var(--or); text-transform:uppercase; margin-bottom:6px; }
+  header h1 { font-family:'Playfair Display',serif; font-size:24px; font-weight:400; color:var(--creme); letter-spacing:1px; }
+  .header-subtitle { font-size:11px; color:var(--gris); letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+  .table-badge { display:inline-flex; align-items:center; gap:8px; margin-top:8px; background:var(--or); color:var(--brun); font-size:11px; font-weight:400; letter-spacing:2px; text-transform:uppercase; padding:3px 12px; border-radius:20px; cursor:pointer; }
 
-  /* Grille des tables */
-  .grille-tables {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    width: 100%;
-    max-width: 360px;
-    margin-bottom: 32px;
-  }
+  .nav-categories { display:flex; overflow-x:auto; gap:8px; padding:14px 16px; background:var(--brun2); scrollbar-width:none; }
+  .nav-categories::-webkit-scrollbar { display:none; }
+  .cat-btn { flex-shrink:0; background:transparent; border:1px solid rgba(245,240,232,0.3); color:var(--creme); font-family:'Lato',sans-serif; font-size:12px; font-weight:400; letter-spacing:1.5px; text-transform:uppercase; padding:7px 16px; border-radius:20px; cursor:pointer; transition:all 0.2s; }
+  .cat-btn.active, .cat-btn:hover { background:var(--or); border-color:var(--or); color:var(--brun); }
 
-  .btn-table {
-    aspect-ratio: 1;
-    background: rgba(245,240,232,0.07);
-    border: 1px solid rgba(245,240,232,0.15);
-    border-radius: 10px;
-    color: var(--creme);
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.18s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .btn-table:hover, .btn-table.selectionne {
-    background: var(--or);
-    border-color: var(--or);
-    color: var(--brun);
-    transform: scale(1.06);
-  }
+  main { padding:0 0 120px; }
+  .category-section { display:none; }
+  .category-section.visible { display:block; }
+  .category-header { padding:28px 20px 8px; display:flex; align-items:center; gap:14px; }
+  .category-header h2 { font-family:'Playfair Display',serif; font-size:22px; font-weight:400; font-style:italic; color:var(--brun); white-space:nowrap; }
+  .cat-line { flex:1; height:1px; background:linear-gradient(to right,var(--or),transparent); }
+  .service-label { font-size:10px; letter-spacing:3px; color:var(--or); text-transform:uppercase; padding:0 20px 10px; }
 
-  /* Saisie manuelle */
-  .ou-separateur {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--gris);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    text-align: center;
-  }
+  .plat { margin:0 16px 12px; background:#fff; border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; box-shadow:0 1px 6px rgba(44,26,14,0.07); border:1px solid rgba(184,134,11,0.12); cursor:pointer; transition:transform 0.15s; position:relative; overflow:hidden; }
+  .plat:active { transform:scale(0.985); }
+  .plat-info { flex:1; }
+  .plat-nom { font-family:'Playfair Display',serif; font-size:16px; font-weight:600; color:var(--brun); margin-bottom:4px; }
+  .plat-desc { font-size:13px; color:var(--gris); line-height:1.5; margin-bottom:8px; }
+  .plat-footer { display:flex; align-items:center; }
+  .plat-prix { font-size:17px; font-weight:400; color:var(--or); font-family:'Playfair Display',serif; }
+  .plat-add { background:var(--brun); color:var(--creme); border:none; width:30px; height:30px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; flex-shrink:0; margin-left:auto; }
+  .plat-add:hover { background:var(--or); color:var(--brun); }
+  .badge-jour { position:absolute; top:10px; right:10px; background:var(--or); color:var(--brun); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 7px; border-radius:4px; }
 
-  .saisie-manuelle {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    max-width: 360px;
-    margin-bottom: 32px;
-  }
-  .saisie-manuelle input {
-    flex: 1;
-    background: rgba(245,240,232,0.08);
-    border: 1px solid rgba(245,240,232,0.2);
-    border-radius: 10px;
-    color: var(--creme);
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    text-align: center;
-    padding: 12px;
-    outline: none;
-    -moz-appearance: textfield;
-  }
-  .saisie-manuelle input::-webkit-outer-spin-button,
-  .saisie-manuelle input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .saisie-manuelle input::placeholder { color: rgba(245,240,232,0.25); }
-  .saisie-manuelle input:focus { border-color: var(--or); }
+  .plat-note { margin:0 16px 12px; background:rgba(184,134,11,0.07); border-left:3px solid var(--or); border-radius:0 8px 8px 0; padding:12px 14px; font-size:12px; color:var(--brun2); line-height:1.7; }
+  .plat-note strong { display:block; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--or); margin-bottom:4px; font-weight:400; }
+  .note-allergenes { margin:16px 16px 0; padding:12px 14px; background:rgba(44,26,14,0.04); border-radius:8px; font-size:11px; color:var(--gris); line-height:1.6; font-style:italic; }
+  .separator { text-align:center; color:var(--or); font-size:18px; letter-spacing:6px; padding:6px 0 2px; opacity:0.5; }
 
-  .btn-valider {
-    background: var(--or);
-    color: var(--brun);
-    border: none;
-    border-radius: 10px;
-    padding: 12px 22px;
-    font-family: 'Lato', sans-serif;
-    font-size: 13px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-weight: 400;
-    transition: background 0.2s;
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  .btn-valider.actif {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .btn-valider.actif:hover { background: var(--or2); }
+  #panier-bar { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--brun); color:var(--creme); border-radius:50px; padding:14px 24px; display:flex; align-items:center; gap:16px; box-shadow:0 6px 24px rgba(44,26,14,0.35); z-index:200; cursor:pointer; transition:transform 0.35s cubic-bezier(.34,1.56,.64,1); min-width:260px; justify-content:space-between; }
+  #panier-bar.visible { transform:translateX(-50%) translateY(0); }
+  .panier-label { font-size:13px; letter-spacing:1px; text-transform:uppercase; }
+  .panier-total { font-family:'Playfair Display',serif; font-size:18px; color:var(--or2); }
+  .panier-count { background:var(--or); color:var(--brun); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
 
-  .msg-erreur {
-    color: #e88;
-    font-size: 13px;
-    min-height: 18px;
-    text-align: center;
-    margin-top: -16px;
-    margin-bottom: 16px;
-  }
+  #modal-overlay { display:none; position:fixed; inset:0; background:rgba(44,26,14,0.6); z-index:300; align-items:flex-end; justify-content:center; }
+  #modal-overlay.open { display:flex; }
+  #modal { background:var(--creme); border-radius:20px 20px 0 0; padding:24px 20px 36px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; animation:slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform:translateY(100%); } }
+  .modal-handle { width:40px; height:4px; background:var(--gris); border-radius:2px; margin:0 auto 20px; opacity:0.4; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:22px; font-style:italic; color:var(--brun); margin-bottom:6px; text-align:center; }
+  .modal-table-info { font-size:12px; color:var(--gris); text-align:center; letter-spacing:1px; margin-bottom:18px; text-transform:uppercase; }
+  .commande-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(44,26,14,0.08); font-size:14px; color:var(--brun2); }
+  .commande-item:last-of-type { border-bottom:none; }
+  .item-nom { font-family:'Playfair Display',serif; font-size:15px; }
+  .item-qty { display:flex; align-items:center; gap:10px; }
+  .qty-btn { background:none; border:1px solid var(--brun2); color:var(--brun2); width:24px; height:24px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .qty-btn:hover { background:var(--brun); color:var(--creme); border-color:var(--brun); }
+  .modal-total { display:flex; justify-content:space-between; padding:16px 0 20px; font-family:'Playfair Display',serif; font-size:20px; color:var(--brun); border-top:1px solid var(--or); margin-top:8px; }
+  .btn-commander { width:100%; background:var(--brun); color:var(--creme); border:none; padding:16px; border-radius:10px; font-family:'Lato',sans-serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s; }
+  .btn-commander:hover { background:var(--or); color:var(--brun); }
+  .btn-fermer { width:100%; background:transparent; border:1px solid rgba(44,26,14,0.2); color:var(--gris); padding:12px; border-radius:10px; font-family:'Lato',sans-serif; font-size:13px; letter-spacing:1px; cursor:pointer; margin-top:10px; }
 
-  /* ══════════════════════════════
-     MENU (caché au départ)
-  ══════════════════════════════ */
-  #ecran-menu { display: none; }
-
-  header {
-    background: var(--brun);
-    padding: 28px 20px 22px;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(44,26,14,0.25);
-  }
-  .header-eyebrow { font-size: 10px; letter-spacing: 4px; color: var(--or); text-transform: uppercase; margin-bottom: 6px; }
-  header h1 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400; color: var(--creme); letter-spacing: 1px; }
-  .header-subtitle { font-size: 11px; color: var(--gris); letter-spacing: 2px; margin-top: 4px; text-transform: uppercase; }
-  .table-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    margin-top: 8px; background: var(--or); color: var(--brun);
-    font-size: 11px; font-weight: 400; letter-spacing: 2px;
-    text-transform: uppercase; padding: 3px 12px; border-radius: 20px;
-    cursor: pointer;
-  }
-  .table-badge:hover { background: var(--or2); }
-  .table-badge-edit { font-size: 13px; }
-
-  .nav-categories {
-    display: flex; overflow-x: auto; gap: 8px;
-    padding: 14px 16px; background: var(--brun2); scrollbar-width: none;
-  }
-  .nav-categories::-webkit-scrollbar { display: none; }
-  .cat-btn {
-    flex-shrink: 0; background: transparent;
-    border: 1px solid rgba(245,240,232,0.3); color: var(--creme);
-    font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 400;
-    letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 16px;
-    border-radius: 20px; cursor: pointer; transition: all 0.2s;
-  }
-  .cat-btn.active, .cat-btn:hover { background: var(--or); border-color: var(--or); color: var(--brun); }
-
-  main { padding: 0 0 120px; }
-  .category-section { display: none; }
-  .category-section.visible { display: block; }
-
-  .category-header { padding: 28px 20px 8px; display: flex; align-items: center; gap: 14px; }
-  .category-header h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; font-style: italic; color: var(--brun); white-space: nowrap; }
-  .cat-line { flex: 1; height: 1px; background: linear-gradient(to right, var(--or), transparent); }
-  .service-label { font-size: 10px; letter-spacing: 3px; color: var(--or); text-transform: uppercase; padding: 0 20px 10px; }
-
-  .plat {
-    margin: 0 16px 12px; background: #fff; border-radius: 10px; padding: 16px;
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: 12px; box-shadow: 0 1px 6px rgba(44,26,14,0.07);
-    border: 1px solid rgba(184,134,11,0.12); cursor: pointer;
-    transition: transform 0.15s; position: relative; overflow: hidden;
-  }
-  .plat:active { transform: scale(0.985); }
-  .plat-info { flex: 1; }
-  .plat-nom { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: var(--brun); margin-bottom: 4px; }
-  .plat-desc { font-size: 13px; color: var(--gris); line-height: 1.5; margin-bottom: 8px; }
-  .plat-footer { display: flex; align-items: center; }
-  .plat-prix { font-size: 17px; font-weight: 400; color: var(--or); font-family: 'Playfair Display', serif; }
-  .plat-add {
-    background: var(--brun); color: var(--creme); border: none;
-    width: 30px; height: 30px; border-radius: 50%; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s; flex-shrink: 0; margin-left: auto;
-  }
-  .plat-add:hover { background: var(--or); color: var(--brun); }
-
-  .plat-note {
-    margin: 0 16px 12px; background: rgba(184,134,11,0.07);
-    border-left: 3px solid var(--or); border-radius: 0 8px 8px 0;
-    padding: 12px 14px; font-size: 12px; color: var(--brun2); line-height: 1.7;
-  }
-  .plat-note strong { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--or); margin-bottom: 4px; font-weight: 400; }
-
-  .note-allergenes {
-    margin: 16px 16px 0; padding: 12px 14px;
-    background: rgba(44,26,14,0.04); border-radius: 8px;
-    font-size: 11px; color: var(--gris); line-height: 1.6; font-style: italic;
-  }
-
-  .separator { text-align: center; color: var(--or); font-size: 18px; letter-spacing: 6px; padding: 6px 0 2px; opacity: 0.5; }
-
-  /* PANIER */
-  #panier-bar {
-    position: fixed; bottom: 20px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--brun); color: var(--creme);
-    border-radius: 50px; padding: 14px 24px;
-    display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 6px 24px rgba(44,26,14,0.35);
-    z-index: 200; cursor: pointer;
-    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
-    min-width: 260px; justify-content: space-between;
-  }
-  #panier-bar.visible { transform: translateX(-50%) translateY(0); }
-  .panier-label { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
-  .panier-total { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--or2); }
-  .panier-count { background: var(--or); color: var(--brun); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-
-  /* MODAL */
-  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,26,14,0.6); z-index: 300; align-items: flex-end; justify-content: center; }
-  #modal-overlay.open { display: flex; }
-  #modal { background: var(--creme); border-radius: 20px 20px 0 0; padding: 24px 20px 36px; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; animation: slideUp 0.3s ease; }
-  @keyframes slideUp { from { transform: translateY(100%); } }
-  .modal-handle { width: 40px; height: 4px; background: var(--gris); border-radius: 2px; margin: 0 auto 20px; opacity: 0.4; }
-  .modal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-style: italic; color: var(--brun); margin-bottom: 6px; text-align: center; }
-  .modal-table-info { font-size: 12px; color: var(--gris); text-align: center; letter-spacing: 1px; margin-bottom: 18px; text-transform: uppercase; }
-  .commande-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(44,26,14,0.08); font-size: 14px; color: var(--brun2); }
-  .commande-item:last-of-type { border-bottom: none; }
-  .item-nom { font-family: 'Playfair Display', serif; font-size: 15px; }
-  .item-qty { display: flex; align-items: center; gap: 10px; }
-  .qty-btn { background: none; border: 1px solid var(--brun2); color: var(--brun2); width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-  .qty-btn:hover { background: var(--brun); color: var(--creme); border-color: var(--brun); }
-  .modal-total { display: flex; justify-content: space-between; padding: 16px 0 20px; font-family: 'Playfair Display', serif; font-size: 20px; color: var(--brun); border-top: 1px solid var(--or); margin-top: 8px; }
-  .btn-commander { width: 100%; background: var(--brun); color: var(--creme); border: none; padding: 16px; border-radius: 10px; font-family: 'Lato', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-  .btn-commander:hover { background: var(--or); color: var(--brun); }
-  .btn-fermer { width: 100%; background: transparent; border: 1px solid rgba(44,26,14,0.2); color: var(--gris); padding: 12px; border-radius: 10px; font-family: 'Lato', sans-serif; font-size: 13px; letter-spacing: 1px; cursor: pointer; margin-top: 10px; }
-
-  /* CONFIRMATION */
-  #confirmation { display: none; position: fixed; inset: 0; background: var(--brun); z-index: 400; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 30px; }
-  #confirmation.open { display: flex; }
-  .confirm-icon { font-size: 60px; margin-bottom: 20px; }
-  .confirm-title { font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic; color: var(--creme); margin-bottom: 10px; }
-  .confirm-msg { color: var(--gris); font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
-  .confirm-table { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--or); margin-bottom: 32px; }
-  .btn-retour { background: var(--or); color: var(--brun); border: none; padding: 14px 36px; border-radius: 50px; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-family: 'Lato', sans-serif; }
+  #confirmation { display:none; position:fixed; inset:0; background:var(--brun); z-index:400; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 30px; }
+  #confirmation.open { display:flex; }
+  .confirm-icon { font-size:60px; margin-bottom:20px; }
+  .confirm-title { font-family:'Playfair Display',serif; font-size:28px; font-style:italic; color:var(--creme); margin-bottom:10px; }
+  .confirm-msg { color:var(--gris); font-size:15px; line-height:1.6; margin-bottom:32px; }
+  .confirm-table { font-family:'Playfair Display',serif; font-size:18px; color:var(--or); margin-bottom:32px; }
+  .btn-retour { background:var(--or); color:var(--brun); border:none; padding:14px 36px; border-radius:50px; font-size:13px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'Lato',sans-serif; }
 </style>
 </head>
 <body>
 
-<!-- ══════════════ ÉCRAN CHOIX TABLE ══════════════ -->
+<div id="chargement" class="visible">
+  <div class="spinner"></div>
+  <div class="chargement-texte">Chargement du menu…</div>
+</div>
+
 <div id="ecran-table">
   <p class="accueil-eyebrow">Bienvenue</p>
   <h1 class="accueil-titre">L'Espace Associés</h1>
-  <p class="accueil-sous">Menu du 26 au 29 mai</p>
-
+  <p class="accueil-sous" id="sous-titre-accueil">Menu de la semaine</p>
   <p class="table-question">À quelle table êtes-vous assis ?</p>
-
   <div class="grille-tables" id="grille-tables"></div>
-
   <p class="ou-separateur">ou saisissez votre numéro</p>
-
   <div class="saisie-manuelle">
     <input type="number" id="input-table" min="1" max="99" placeholder="N°" oninput="onSaisie(this.value)">
     <button class="btn-valider" id="btn-valider" onclick="validerTable()">Accéder →</button>
@@ -314,215 +123,37 @@
   <p class="msg-erreur" id="msg-erreur"></p>
 </div>
 
-<!-- ══════════════ ÉCRAN MENU ══════════════ -->
 <div id="ecran-menu">
   <header>
     <p class="header-eyebrow">Bienvenue</p>
     <h1>L'Espace Associés</h1>
-    <p class="header-subtitle">Menu du 26 au 29 mai</p>
-    <span class="table-badge" onclick="changerTable()" title="Changer de table">
+    <p class="header-subtitle" id="sous-titre-menu">Menu de la semaine</p>
+    <span class="table-badge" onclick="changerTable()">
       <span id="num-table">Table 1</span>
-      <span class="table-badge-edit">✎</span>
+      <span>✎</span>
     </span>
   </header>
-
-  <nav class="nav-categories">
-    <button class="cat-btn active" onclick="showCat('midi', this)">Menu midi</button>
-    <button class="cat-btn" onclick="showCat('plancha', this)">La Plancha</button>
-    <button class="cat-btn" onclick="showCat('apresmidi', this)">Menu après-midi</button>
-  </nav>
-
-  <main>
-
-    <!-- MENU MIDI -->
-    <section class="category-section visible" id="cat-midi">
-      <div class="category-header"><h2>Menu midi</h2><div class="cat-line"></div></div>
-      <p class="service-label">12:00 – 14:00</p>
-
-      <div class="plat" onclick="ajouterAuPanier('Soupe du jour — Lentille corail', 5.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Soupe du jour</div>
-          <div class="plat-desc">Lentille corail</div>
-          <div class="plat-footer"><span class="plat-prix">5,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Soupe du jour — Lentille corail', 5.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Quiche du jour &amp; mesclun — Thon', 9.90)">
-        <div class="plat-info">
-          <div class="plat-nom">Quiche du jour &amp; mesclun</div>
-          <div class="plat-desc">Thon</div>
-          <div class="plat-footer"><span class="plat-prix">9,90 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Quiche du jour &amp; mesclun — Thon', 9.90)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Salade Caesar', 13.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Salade Caesar</div>
-          <div class="plat-desc">Romaine, poulet, crouton, tomate marinée, sauce césar</div>
-          <div class="plat-footer"><span class="plat-prix">13,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Salade Caesar', 13.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Salade Parisienne', 11.50)">
-        <div class="plat-info">
-          <div class="plat-nom">Salade Parisienne</div>
-          <div class="plat-desc">Laitue, pomme de terre, jambon, œuf dur, champignon, crouton</div>
-          <div class="plat-footer"><span class="plat-prix">11,50 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Salade Parisienne', 11.50)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Paella de gambas', 15.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Plat : Paella de gambas</div>
-          <div class="plat-footer"><span class="plat-prix">15,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Paella de gambas', 15.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Assiette de fromages &amp; salade verte', 4.50)">
-        <div class="plat-info">
-          <div class="plat-nom">Assiette de fromages &amp; salade verte</div>
-          <div class="plat-desc">Fourme d'Ambert, chaource, tomme</div>
-          <div class="plat-footer"><span class="plat-prix">4,50 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Assiette de fromages &amp; salade verte', 4.50)">+</button>
-      </div>
-
-      <div class="note-allergenes">Nos plats peuvent contenir des allergènes, nous sommes à votre disposition pour tout renseignement. Nous tenons à votre disposition la traçabilité relative à nos viandes servies.</div>
-      <div class="separator">· · ·</div>
-    </section>
-
-    <!-- LA PLANCHA -->
-    <section class="category-section" id="cat-plancha">
-      <div class="category-header"><h2>La Plancha</h2><div class="cat-line"></div></div>
-      <p class="service-label">12:00 – 14:00</p>
-
-      <div class="plat" onclick="ajouterAuPanier('Pavé de rumsteak', 14.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Pavé de rumsteak</div>
-          <div class="plat-footer"><span class="plat-prix">14,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Pavé de rumsteak', 14.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Lieu noir', 11.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Lieu noir</div>
-          <div class="plat-footer"><span class="plat-prix">11,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Lieu noir', 11.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Filet de poulet', 12.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Filet de poulet</div>
-          <div class="plat-footer"><span class="plat-prix">12,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Filet de poulet', 12.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Oeufs au plat', 8.50)">
-        <div class="plat-info">
-          <div class="plat-nom">Œufs au plat</div>
-          <div class="plat-footer"><span class="plat-prix">8,50 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Oeufs au plat', 8.50)">+</button>
-      </div>
-
-      <div class="plat-note">
-        <strong>Garnitures au choix</strong>
-        Grenailles au four &nbsp;·&nbsp; Boulgour &nbsp;·&nbsp; Petits pois &nbsp;·&nbsp; Carotte
-      </div>
-      <div class="plat-note">
-        <strong>Sauce au choix</strong>
-        Sauce vierge &nbsp;·&nbsp; Sauce au bleu
-      </div>
-
-      <div class="note-allergenes">Nos plats peuvent contenir des allergènes, nous sommes à votre disposition pour tout renseignement. Nous tenons à votre disposition la traçabilité relative à nos viandes servies.</div>
-      <div class="separator">· · ·</div>
-    </section>
-
-    <!-- MENU APRÈS-MIDI -->
-    <section class="category-section" id="cat-apresmidi">
-      <div class="category-header"><h2>Menu après-midi</h2><div class="cat-line"></div></div>
-      <p class="service-label">14:00 – 15:30</p>
-
-      <div class="plat" onclick="ajouterAuPanier('Wrap et mesclun', 7.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Wrap &amp; mesclun</div>
-          <div class="plat-footer"><span class="plat-prix">7,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Wrap et mesclun', 7.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Salade Caesar apres-midi', 13.00)">
-        <div class="plat-info">
-          <div class="plat-nom">Salade Caesar</div>
-          <div class="plat-footer"><span class="plat-prix">13,00 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Salade Caesar apres-midi', 13.00)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Salade Parisienne apres-midi', 11.50)">
-        <div class="plat-info">
-          <div class="plat-nom">Salade Parisienne</div>
-          <div class="plat-footer"><span class="plat-prix">11,50 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Salade Parisienne apres-midi', 11.50)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Quiche et mesclun', 9.90)">
-        <div class="plat-info">
-          <div class="plat-nom">Quiche &amp; mesclun</div>
-          <div class="plat-footer"><span class="plat-prix">9,90 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Quiche et mesclun', 9.90)">+</button>
-      </div>
-
-      <div class="plat" onclick="ajouterAuPanier('Croque-Monsieur et mesclun', 9.90)">
-        <div class="plat-info">
-          <div class="plat-nom">Croque-Monsieur &amp; mesclun</div>
-          <div class="plat-footer"><span class="plat-prix">9,90 €</span></div>
-        </div>
-        <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('Croque-Monsieur et mesclun', 9.90)">+</button>
-      </div>
-
-      <div class="note-allergenes">Nos plats peuvent contenir des allergènes, nous sommes à votre disposition pour tout renseignement.</div>
-      <div class="separator">· · ·</div>
-    </section>
-
-  </main>
-
-  <!-- BARRE PANIER -->
+  <nav class="nav-categories" id="nav-categories"></nav>
+  <main id="contenu-menu"></main>
   <div id="panier-bar" onclick="ouvrirModal()">
     <span class="panier-count" id="panier-count">0</span>
     <span class="panier-label">Ma commande</span>
     <span class="panier-total" id="panier-total">0,00 €</span>
   </div>
+</div>
 
-</div><!-- fin ecran-menu -->
-
-<!-- MODAL COMMANDE -->
 <div id="modal-overlay">
   <div id="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Ma commande</div>
     <div class="modal-table-info" id="modal-table-info">Table 1</div>
     <div id="modal-items"></div>
-    <div class="modal-total">
-      <span>Total</span>
-      <span id="modal-total-prix">0,00 €</span>
-    </div>
+    <div class="modal-total"><span>Total</span><span id="modal-total-prix">0,00 €</span></div>
     <button class="btn-commander" onclick="envoyerCommande()">Envoyer la commande</button>
     <button class="btn-fermer" onclick="fermerModal()">Continuer à parcourir</button>
   </div>
 </div>
 
-<!-- CONFIRMATION -->
 <div id="confirmation">
   <div class="confirm-icon">✓</div>
   <div class="confirm-title">Commande envoyée !</div>
@@ -532,23 +163,54 @@
 </div>
 
 <script>
-  // ── Nombre de tables affichées dans la grille ──
-  const NB_TABLES_GRILLE = 20;
-
+  const NB_TABLES = 20;
   let numTable = null;
   let panier = {};
+  let menuData = [];
 
-  // Génère la grille de boutons
-  (function genererGrille() {
+  // ── Chargement du menu depuis l'API ──
+  async function chargerMenu() {
+    try {
+      const r = await fetch('/api/menu');
+      menuData = await r.json();
+    } catch(e) {
+      console.error('Erreur chargement menu', e);
+    }
+    document.getElementById('chargement').classList.remove('visible');
+    document.getElementById('ecran-table').style.display = 'flex';
+    genererGrille();
+
+    // Écouter les mises à jour du menu en temps réel
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(proto + '://' + location.host + '?role=convive');
+    ws.onmessage = (evt) => {
+      const msg = JSON.parse(evt.data);
+      if (msg.type === 'menu_mis_a_jour') chargerMenuSilencieux();
+    };
+  }
+
+  async function chargerMenuSilencieux() {
+    try {
+      const r = await fetch('/api/menu');
+      menuData = await r.json();
+      if (document.getElementById('ecran-menu').style.display !== 'none') {
+        const catActive = document.querySelector('.cat-btn.active');
+        const idx = catActive ? parseInt(catActive.dataset.idx) : 0;
+        construireMenu(idx);
+      }
+    } catch(e) {}
+  }
+
+  function genererGrille() {
     const grille = document.getElementById('grille-tables');
-    for (let i = 1; i <= NB_TABLES_GRILLE; i++) {
+    for (let i = 1; i <= NB_TABLES; i++) {
       const btn = document.createElement('button');
       btn.className = 'btn-table';
       btn.textContent = i;
       btn.onclick = () => selectionnerTableGrille(i, btn);
       grille.appendChild(btn);
     }
-  })();
+  }
 
   function selectionnerTableGrille(n, btn) {
     document.querySelectorAll('.btn-table').forEach(b => b.classList.remove('selectionne'));
@@ -561,12 +223,11 @@
   function onSaisie(val) {
     document.querySelectorAll('.btn-table').forEach(b => b.classList.remove('selectionne'));
     const n = parseInt(val);
-    if (n >= 1 && n <= NB_TABLES_GRILLE) {
+    if (n >= 1 && n <= NB_TABLES) {
       const btns = document.querySelectorAll('.btn-table');
       if (btns[n - 1]) btns[n - 1].classList.add('selectionne');
     }
     document.getElementById('btn-valider').classList.toggle('actif', val && n >= 1);
-    document.getElementById('msg-erreur').textContent = '';
   }
 
   function validerTable() {
@@ -585,9 +246,64 @@
     document.getElementById('num-table').textContent = 'Table ' + numTable;
     document.getElementById('modal-table-info').textContent = 'Table ' + numTable;
     document.getElementById('confirm-table-num').textContent = 'Table ' + numTable;
+    construireMenu(0);
   }
 
-  // Bouton ✎ dans le badge — revenir à l'écran de sélection
+  function construireMenu(catActiveIdx) {
+    const nav = document.getElementById('nav-categories');
+    const contenu = document.getElementById('contenu-menu');
+    nav.innerHTML = '';
+    contenu.innerHTML = '';
+
+    menuData.forEach((cat, idx) => {
+      // Bouton nav
+      const btn = document.createElement('button');
+      btn.className = 'cat-btn' + (idx === catActiveIdx ? ' active' : '');
+      btn.textContent = cat.categorie;
+      btn.dataset.idx = idx;
+      btn.onclick = () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.category-section').forEach(s => s.classList.remove('visible'));
+        document.getElementById('cat-' + idx).classList.add('visible');
+      };
+      nav.appendChild(btn);
+
+      // Section
+      const section = document.createElement('section');
+      section.className = 'category-section' + (idx === catActiveIdx ? ' visible' : '');
+      section.id = 'cat-' + idx;
+
+      let html = `<div class="category-header"><h2>${cat.categorie}</h2><div class="cat-line"></div></div>`;
+      if (cat.service) html += `<p class="service-label">${cat.service}</p>`;
+
+      cat.plats.filter(p => p.actif).forEach(plat => {
+        const nomSafe = plat.nom.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        html += `
+          <div class="plat" onclick="ajouterAuPanier('${nomSafe}', ${plat.prix})">
+            <div class="plat-info">
+              <div class="plat-nom">${plat.nom}</div>
+              ${plat.description ? `<div class="plat-desc">${plat.description}</div>` : ''}
+              <div class="plat-footer"><span class="plat-prix">${plat.prix.toFixed(2).replace('.', ',')} €</span></div>
+            </div>
+            <button class="plat-add" onclick="event.stopPropagation(); ajouterAuPanier('${nomSafe}', ${plat.prix})">+</button>
+            ${plat.plat_du_jour ? '<span class="badge-jour">Du jour</span>' : ''}
+          </div>`;
+      });
+
+      if (cat.notes) {
+        cat.notes.forEach(n => {
+          html += `<div class="plat-note"><strong>${n.titre}</strong>${n.texte}</div>`;
+        });
+      }
+
+      html += `<div class="note-allergenes">Nos plats peuvent contenir des allergènes, nous sommes à votre disposition pour tout renseignement.</div>`;
+      html += `<div class="separator">· · ·</div>`;
+      section.innerHTML = html;
+      contenu.appendChild(section);
+    });
+  }
+
   function changerTable() {
     if (!confirm('Changer de table ? Votre panier sera conservé.')) return;
     document.getElementById('ecran-menu').style.display = 'none';
@@ -597,10 +313,9 @@
     document.querySelectorAll('.btn-table').forEach(b => b.classList.remove('selectionne'));
   }
 
-  // ── Panier ──
   function ajouterAuPanier(nom, prix) {
-    if (panier[nom]) { panier[nom].qty++; }
-    else { panier[nom] = { prix, qty: 1 }; }
+    if (panier[nom]) panier[nom].qty++;
+    else panier[nom] = { prix, qty: 1 };
     mettreAJourPanier();
   }
 
@@ -622,13 +337,11 @@
       const div = document.createElement('div');
       div.className = 'commande-item';
       const nomSafe = nom.replace(/'/g, "\\'");
-      div.innerHTML = '<span class="item-nom">' + nom + '</span>'
-        + '<div class="item-qty">'
+      div.innerHTML = '<span class="item-nom">' + nom + '</span><div class="item-qty">'
         + '<button class="qty-btn" onclick="changerQty(\'' + nomSafe + '\', -1)">−</button>'
         + '<span>' + qty + '</span>'
         + '<button class="qty-btn" onclick="changerQty(\'' + nomSafe + '\', 1)">+</button>'
-        + '<span style="min-width:60px;text-align:right;color:var(--or);font-family:\'Playfair Display\',serif">'
-        + (prix * qty).toFixed(2).replace('.', ',') + ' €</span>'
+        + '<span style="min-width:60px;text-align:right;color:var(--or);font-family:\'Playfair Display\',serif">' + (prix * qty).toFixed(2).replace('.', ',') + ' €</span>'
         + '</div>';
       container.appendChild(div);
     }
@@ -645,18 +358,15 @@
     ouvrirModal();
   }
 
-  function fermerModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
-  }
+  function fermerModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 
   function envoyerCommande() {
     const items = Object.entries(panier).map(([nom, { prix, qty }]) => ({ nom, prix, qty }));
-    const commande = { table: numTable, items, heure: new Date().toLocaleTimeString('fr-FR') };
     fetch('/commande', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(commande)
-    }).catch(() => console.log('Serveur non connecte'));
+      body: JSON.stringify({ table: numTable, items, heure: new Date().toLocaleTimeString('fr-FR') })
+    }).catch(() => {});
     fermerModal();
     document.getElementById('confirmation').classList.add('open');
   }
@@ -665,19 +375,14 @@
     panier = {};
     mettreAJourPanier();
     document.getElementById('confirmation').classList.remove('open');
-    showCat('midi', document.querySelector('.cat-btn'));
-  }
-
-  function showCat(id, btn) {
-    document.querySelectorAll('.category-section').forEach(s => s.classList.remove('visible'));
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('cat-' + id).classList.add('visible');
-    btn.classList.add('active');
+    construireMenu(0);
   }
 
   document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) fermerModal();
   });
+
+  chargerMenu();
 </script>
 </body>
 </html>
