@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serveurs — Le 37 Partners Lounge</title>
+<style>
+  :root { --vert:#87BE25; --vert2:#6fa01e; --noir:#000000; --blanc:#FFFFFF; --bleu:#1076A8; --gris1:#f5f5f5; --gris2:#e0e0e0; --gris3:#888; --rouge:#e74c3c; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; color:var(--blanc); font-family:'Arial',sans-serif; min-height:100vh; }
+
+  header { background:var(--blanc); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--vert); position:sticky; top:0; z-index:10; }
+  header h1 { font-size:16px; color:var(--vert); letter-spacing:3px; text-transform:uppercase; font-weight:700; }
+  #statut-ws { font-size:11px; padding:4px 12px; border-radius:4px; font-weight:500; letter-spacing:1px; }
+  #statut-ws.connecte { background:rgba(135,190,37,0.2); color:var(--vert); border:1px solid var(--vert); }
+  #statut-ws.deconnecte { background:rgba(231,76,60,0.2); color:var(--rouge); border:1px solid var(--rouge); }
+
+  #zone { padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .vide { text-align:center; padding:80px 20px; color:#333; font-size:14px; letter-spacing:1px; }
+  .vide span { display:block; font-size:40px; margin-bottom:16px; }
+
+  .notif { background:#1a1a1a; border-radius:10px; border-left:4px solid var(--vert); padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,0.3); animation:glisse 0.3s ease; }
+  @keyframes glisse { from { opacity:0; transform:translateX(-10px); } }
+  .notif.en_cours { border-left-color:var(--bleu); }
+  .notif.servie { border-left-color:#333; opacity:0.5; }
+
+  .notif-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .notif-table { font-size:18px; font-weight:700; color:var(--blanc); letter-spacing:1px; }
+  .notif-heure { font-size:11px; color:var(--gris3); letter-spacing:1px; }
+  .notif-badge { font-size:9px; padding:3px 10px; border-radius:3px; letter-spacing:2px; text-transform:uppercase; font-weight:600; }
+  .badge-nouvelle { background:rgba(135,190,37,0.2); color:var(--vert); border:1px solid var(--vert); }
+  .badge-en_cours { background:rgba(16,118,168,0.2); color:var(--bleu); border:1px solid var(--bleu); }
+  .badge-servie { background:#222; color:var(--gris3); }
+
+  .notif-items { font-size:13px; color:#ccc; line-height:2; margin-bottom:10px; }
+  .notif-item-ligne { display:flex; gap:20px; align-items:center; padding:8px 0; border-bottom:1px solid #222; }
+  .notif-item-ligne:last-child { border-bottom:none; }
+  .notif-qty { background:var(--vert); color:var(--blanc); width:30px; height:30px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; }
+  .notif-nom { flex:1; color:#fff; font-size:16px; font-weight:500; }
+
+  .notif-footer { display:flex; gap:8px; }
+  .btn { flex:1; padding:10px; border:none; border-radius:6px; font-size:11px; cursor:pointer; letter-spacing:1.5px; font-weight:600; text-transform:uppercase; transition:opacity 0.2s; }
+  .btn:hover { opacity:0.85; }
+  .btn-bleu { background:var(--bleu); color:var(--blanc); }
+  .btn-vert { background:var(--vert); color:var(--blanc); }
+
+  #flash { position:fixed; top:0; left:0; right:0; background:var(--vert); color:var(--blanc); text-align:center; padding:14px; font-weight:700; font-size:14px; display:none; z-index:100; letter-spacing:2px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛎 Serveurs — Le 37 Partners Lounge</h1>
+  <span id="statut-ws" class="deconnecte">Déconnecté</span>
+</header>
+
+<div id="flash">🔔 Nouvelle commande !</div>
+<div id="zone">
+  <div class="vide"><span>🛎</span>En attente de commandes…</div>
+</div>
+
+<script>
+  let commandes = {};
+  let ws;
+
+  function connecter() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(proto + '://' + location.host + '?role=serveur');
+    ws.onopen = () => {
+      document.getElementById('statut-ws').textContent = '● Connecté';
+      document.getElementById('statut-ws').className = 'connecte';
+    };
+    ws.onclose = () => {
+      document.getElementById('statut-ws').textContent = '● Déconnecté';
+      document.getElementById('statut-ws').className = 'deconnecte';
+      setTimeout(connecter, 3000);
+    };
+    ws.onmessage = (evt) => {
+      const msg = JSON.parse(evt.data);
+      if (msg.type === 'historique') { commandes = {}; msg.commandes.forEach(c => commandes[c.id] = c); afficher(); }
+      if (msg.type === 'nouvelle_commande') { commandes[msg.commande.id] = msg.commande; afficher(); flash(); }
+      if (msg.type === 'maj_statut') { if (commandes[msg.id]) { commandes[msg.id].statut = msg.statut; afficher(); } }
+      if (msg.type === 'reinitialisation') { commandes = {}; afficher(); }
+    };
+  }
+
+  function afficher() {
+    const zone = document.getElementById('zone');
+    const liste = Object.values(commandes).filter(c => c.statut !== 'servie').sort((a, b) => a.id - b.id);
+    if (!liste.length) {
+      zone.innerHTML = '<div class="vide"><span>🛎</span>En attente de commandes…</div>';
+      return;
+    }
+    zone.innerHTML = liste.map(c => `
+      <div class="notif ${c.statut}">
+        <div class="notif-header">
+          <div>
+            <div class="notif-table">Chevalet ${c.table}</div>
+            <div class="notif-heure">${c.heure}</div>
+          </div>
+          <span class="notif-badge badge-${c.statut}">${{nouvelle:'Nouvelle', en_cours:'En cours', servie:'Servie'}[c.statut]}</span>
+        </div>
+        <div class="notif-items">
+          ${c.items.map(i => `<div class="notif-item-ligne"><div class="notif-qty">${i.qty}</div><span class="notif-nom">${i.nom}</span></div>`).join('')}
+        </div>
+        <div class="notif-footer">
+          ${c.statut === 'nouvelle' ? `<button class="btn btn-bleu" onclick="changer(${c.id}, 'en_cours')">En cours</button>` : ''}
+          <button class="btn btn-vert" onclick="changer(${c.id}, 'servie')">✓ Servi</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function changer(id, statut) {
+    fetch('/commande/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ statut })
+    });
+  }
+
+  function flash() {
+    const f = document.getElementById('flash');
+    f.style.display = 'block';
+    setTimeout(() => f.style.display = 'none', 2500);
+  }
+
+  connecter();
+</script>
+</body>
+</html>
