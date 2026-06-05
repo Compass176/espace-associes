@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code — Le 37 Partners Lounge</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root { --vert:#26890D; --vert2:#1e6e0a; --noir:#000000; --blanc:#FFFFFF; --gris1:#f5f5f5; --gris2:#e0e0e0; --gris3:#888; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--gris1); color:var(--noir); font-family:'Montserrat',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; gap:24px; }
+
+  /* Bouton imprimer visible en haut */
+  .toolbar { width:100%; max-width:340px; display:flex; justify-content:flex-end; }
+  .btn-imprimer { background:var(--vert); color:var(--blanc); border:none; padding:10px 20px; border-radius:6px; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'Montserrat',sans-serif; font-weight:500; transition:background 0.2s; }
+  .btn-imprimer:hover { background:var(--vert2); }
+
+  /* Carte QR */
+  .carte-qr { background:var(--blanc); border-radius:16px; padding:32px 28px 28px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:1px solid var(--gris2); max-width:320px; width:100%; }
+
+  .titre-bloc { font-family:'Playfair Display',serif; font-weight:400; text-align:center; margin-bottom:4px; }
+  .titre-grand { font-size:46px; display:block; line-height:1; color:var(--noir); }
+  .titre-grand span { color:var(--vert); }
+  .titre-petit { font-size:10px; display:block; letter-spacing:6px; text-transform:uppercase; font-weight:300; margin-top:6px; font-family:'Montserrat',sans-serif; color:var(--gris3); max-width:120px; margin-left:auto; margin-right:auto; }
+
+  .menu-label { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--vert); font-weight:500; margin:16px 0 20px; display:block; }
+
+  .ligne-sep { width:40px; height:2px; background:var(--vert); margin:0 auto 20px; }
+
+  .qr-box { display:flex; justify-content:center; margin-bottom:20px; padding:12px; background:var(--gris1); border-radius:10px; }
+
+  .invite-texte { font-size:11px; color:var(--gris3); line-height:1.7; font-weight:300; letter-spacing:0.5px; }
+
+  @media print {
+    body { background:#fff; padding:10px; justify-content:center; }
+    .toolbar { display:none; }
+    .carte-qr { box-shadow:none; border:1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn-imprimer" onclick="window.print()">🖨 Imprimer</button>
+</div>
+
+<div class="carte-qr">
+  <div class="titre-bloc">
+    <span class="titre-grand">Le <span>37</span></span>
+    <span class="titre-petit">Partners Lounge</span>
+  </div>
+  <span class="menu-label">Menu</span>
+  <div class="ligne-sep"></div>
+  <div class="qr-box" id="qr-unique"></div>
+  <p class="invite-texte">Scannez ce QR code avec votre téléphone<br>et passez commande directement.</p>
+</div>
+
+<script>
+  const url = window.location.origin;
+
+  new QRCode(document.getElementById('qr-unique'), {
+    text:         url,
+    width:        200,
+    height:       200,
+    colorDark:    '#000000',
+    colorLight:   '#f5f5f5',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+</script>
+</body>
+</html>
