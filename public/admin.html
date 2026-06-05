@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration — Le 37 Partners Lounge</title>
+<style>
+  :root {
+    --vert:    #87BE25;
+    --vert2:   #6fa01e;
+    --noir:    #000000;
+    --blanc:   #FFFFFF;
+    --bleu:    #1076A8;
+    --gris1:   #f5f5f5;
+    --gris2:   #e0e0e0;
+    --gris3:   #888888;
+    --rouge:   #e74c3c;
+    --texte:   #1a1a1a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--gris1); color:var(--texte); font-family:Arial,sans-serif; }
+
+  /* LOGIN */
+  #ecran-login { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px 20px; background:var(--noir); }
+  .login-titre { font-family:Georgia,serif; font-size:24px; font-style:italic; color:var(--blanc); margin-bottom:8px; }
+  .login-sous { font-size:11px; letter-spacing:2px; color:var(--gris3); text-transform:uppercase; margin-bottom:32px; }
+  .login-box { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:28px; width:100%; max-width:320px; }
+  .login-box label { display:block; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gris3); margin-bottom:8px; }
+  .login-box input { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px; color:var(--blanc); font-size:16px; outline:none; margin-bottom:16px; }
+  .login-box input:focus { border-color:var(--vert); }
+  .btn-login { width:100%; background:var(--vert); color:var(--blanc); border:none; padding:14px; border-radius:8px; font-size:14px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-weight:bold; }
+  .btn-login:hover { background:var(--vert2); }
+  .msg-login-erreur { color:#e88; font-size:13px; text-align:center; margin-top:12px; min-height:18px; }
+
+  /* APP */
+  #ecran-app { display:none; }
+  header { background:var(--blanc); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; border-bottom:2px solid var(--vert); }
+  header h1 { font-family:Georgia,serif; font-size:18px; color:var(--vert); font-weight:400; letter-spacing:1px; }
+  .nav-admin { display:flex; gap:6px; padding:12px 16px; background:var(--noir); overflow-x:auto; scrollbar-width:none; }
+  .nav-admin::-webkit-scrollbar { display:none; }
+  .nav-btn { flex-shrink:0; background:transparent; border:1px solid rgba(255,255,255,0.2); color:var(--blanc); padding:6px 16px; border-radius:4px; font-size:12px; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; font-weight:500; }
+  .nav-btn.active { background:var(--vert); border-color:var(--vert); color:var(--blanc); }
+  .nav-btn:hover:not(.active) { border-color:var(--vert); color:var(--vert); }
+  .page { display:none; padding:16px; }
+  .page.visible { display:block; }
+
+  /* MENU EDITOR */
+  .cat-card { background:var(--blanc); border-radius:10px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; }
+  .cat-header { background:var(--noir); color:var(--blanc); padding:14px 16px; display:flex; justify-content:space-between; align-items:center; }
+  .cat-titre { font-family:Georgia,serif; font-size:16px; font-style:italic; color:var(--blanc); }
+  .cat-service { font-size:11px; color:var(--gris3); letter-spacing:1px; }
+  .plat-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--gris2); }
+  .plat-row:last-child { border-bottom:none; }
+  .plat-infos { flex:1; }
+  .plat-row-nom { font-size:15px; color:var(--texte); font-weight:500; }
+  .plat-row-desc { font-size:12px; color:var(--gris3); }
+  .plat-row-prix { font-size:15px; color:var(--vert); font-family:Georgia,serif; min-width:60px; text-align:right; font-weight:600; }
+  .toggle-actif { width:44px; height:24px; border-radius:12px; border:none; cursor:pointer; position:relative; transition:background 0.2s; flex-shrink:0; }
+  .toggle-actif.on { background:var(--vert); }
+  .toggle-actif.off { background:#ccc; }
+  .toggle-actif::after { content:''; position:absolute; top:2px; width:20px; height:20px; border-radius:50%; background:var(--blanc); transition:left 0.2s; }
+  .toggle-actif.on::after { left:22px; }
+  .toggle-actif.off::after { left:2px; }
+  .badge-jour-toggle { font-size:10px; padding:3px 10px; border-radius:4px; cursor:pointer; border:none; letter-spacing:1px; flex-shrink:0; font-weight:500; text-transform:uppercase; }
+  .badge-jour-toggle.on { background:var(--bleu); color:var(--blanc); }
+  .badge-jour-toggle.off { background:var(--gris2); color:var(--gris3); }
+  .badge-cuisson-toggle { font-size:10px; padding:3px 10px; border-radius:4px; cursor:pointer; border:none; letter-spacing:1px; flex-shrink:0; font-weight:500; text-transform:uppercase; }
+  .badge-cuisson-toggle.on { background:#e67e22; color:var(--blanc); }
+  .badge-cuisson-toggle.off { background:var(--gris2); color:var(--gris3); }
+  .btn-edit-plat { background:none; border:1px solid var(--gris2); color:var(--gris3); padding:4px 10px; border-radius:6px; font-size:12px; cursor:pointer; flex-shrink:0; }
+  .btn-edit-plat:hover { border-color:var(--noir); color:var(--noir); }
+  .stock-badge { font-size:11px; color:var(--texte); background:var(--gris1); border:1px solid var(--gris2); padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+  .stock-badge.epuise { background:#fde8e8; color:var(--rouge); border-color:var(--rouge); }
+  .btn-add-plat { width:calc(100% - 32px); margin:12px 16px; background:transparent; border:1px dashed var(--vert); color:var(--vert); padding:10px; border-radius:8px; font-size:13px; cursor:pointer; letter-spacing:1px; }
+  .btn-add-plat:hover { background:rgba(135,190,37,0.06); }
+
+  /* MODAL EDIT */
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; padding:16px; }
+  .modal-bg.open { display:flex; }
+  .modal-edit { background:var(--blanc); border-radius:12px; padding:24px; width:100%; max-width:440px; }
+  .modal-edit h3 { font-family:Georgia,serif; font-size:18px; font-style:italic; color:var(--texte); margin-bottom:20px; }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gris3); margin-bottom:6px; }
+  .form-group input, .form-group textarea { width:100%; border:1px solid var(--gris2); border-radius:8px; padding:10px 12px; font-size:14px; color:var(--texte); outline:none; font-family:Arial,sans-serif; }
+  .form-group input:focus, .form-group textarea:focus { border-color:var(--vert); }
+  .form-group textarea { resize:vertical; min-height:60px; }
+  .form-row { display:flex; gap:10px; }
+  .form-row .form-group { flex:1; }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .btn-sauvegarder { flex:1; background:var(--vert); color:var(--blanc); border:none; padding:12px; border-radius:8px; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; font-weight:500; }
+  .btn-sauvegarder:hover { background:var(--vert2); }
+  .btn-annuler { background:transparent; border:1px solid var(--gris2); color:var(--gris3); padding:12px 20px; border-radius:8px; font-size:13px; cursor:pointer; }
+
+  /* HISTORIQUE */
+  .hist-toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+  .hist-toolbar label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gris3); }
+  .hist-toolbar input, .hist-toolbar select { border:1px solid var(--gris2); border-radius:8px; padding:8px 12px; font-size:14px; color:var(--texte); outline:none; }
+  .hist-toolbar input:focus { border-color:var(--vert); }
+  .btn-rechercher { background:var(--vert); color:var(--blanc); border:none; padding:9px 20px; border-radius:8px; font-size:13px; cursor:pointer; letter-spacing:1px; font-weight:500; }
+  .btn-rechercher:hover { background:var(--vert2); }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+  .stat-card { background:var(--blanc); border-radius:10px; padding:16px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .stat-valeur { font-family:Georgia,serif; font-size:28px; color:var(--vert); font-weight:600; }
+  .stat-label { font-size:11px; color:var(--gris3); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+
+  .top-plats { background:var(--blanc); border-radius:10px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .top-plats h3 { font-family:Georgia,serif; font-size:16px; font-style:italic; color:var(--texte); margin-bottom:12px; }
+  .top-plat-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--gris2); font-size:14px; }
+  .top-plat-row:last-child { border-bottom:none; }
+  .top-plat-qty { background:var(--vert); color:var(--blanc); width:28px; height:28px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px; }
+
+  .commandes-list { background:var(--blanc); border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .commandes-list h3 { font-family:Georgia,serif; font-size:16px; font-style:italic; color:var(--texte); margin-bottom:12px; }
+  .cmd-row { padding:10px 0; border-bottom:1px solid var(--gris2); font-size:13px; }
+  .cmd-row:last-child { border-bottom:none; }
+  .cmd-row-header { display:flex; justify-content:space-between; margin-bottom:4px; }
+  .cmd-table { font-weight:bold; color:var(--texte); }
+  .cmd-heure { color:var(--gris3); }
+  .cmd-total { color:var(--vert); font-family:Georgia,serif; font-weight:600; }
+  .cmd-items { color:var(--gris3); line-height:1.6; }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--noir); color:var(--blanc); padding:12px 24px; border-radius:50px; font-size:13px; letter-spacing:1px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999; }
+  .toast.visible { opacity:1; }
+  .btn-deconnexion { background:transparent; border:1px solid var(--gris2); color:var(--gris3); padding:6px 14px; border-radius:4px; font-size:12px; cursor:pointer; }
+  .btn-deconnexion:hover { border-color:var(--rouge); color:var(--rouge); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="ecran-login">
+  <p class="login-titre">Le 37 Partners Lounge</p>
+  <p class="login-sous">Administration</p>
+  <div class="login-box">
+    <label>Mot de passe</label>
+    <input type="password" id="input-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') seConnecter()">
+    <button class="btn-login" onclick="seConnecter()">Accéder</button>
+    <p class="msg-login-erreur" id="msg-login"></p>
+  </div>
+</div>
+
+<!-- APP ADMIN -->
+<div id="ecran-app">
+  <header>
+    <h1>⚙ Administration — Le 37 Partners Lounge</h1>
+    <button class="btn-deconnexion" onclick="seDeconnecter()">Déconnexion</button>
+  </header>
+  <nav class="nav-admin">
+    <button class="nav-btn active" onclick="afficherPage('menu', this)">📋 Menu</button>
+    <button class="nav-btn" onclick="afficherPage('historique', this)">📊 Historique</button>
+  </nav>
+
+  <!-- PAGE CODE DU JOUR -->
+  <div class="page" id="page-code">
+    <div style="max-width:400px;margin:20px auto;">
+      <div style="background:var(--blanc);border-radius:10px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <h3 style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:var(--texte);margin-bottom:6px;">Code d'accès du jour</h3>
+        <p style="font-size:12px;color:var(--gris3);margin-bottom:20px;line-height:1.6;">Ce code sera demandé aux convives avant qu'ils puissent accéder au menu. Changez-le chaque matin et partagez-le uniquement avec vos convives via le QR code.</p>
+
+        <div id="code-affichage" style="text-align:center;padding:20px;background:var(--gris1);border-radius:8px;margin-bottom:20px;">
+          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gris3);margin-bottom:8px;">Code actuel</div>
+          <div id="code-valeur" style="font-size:36px;font-weight:700;letter-spacing:8px;color:var(--vert);font-family:monospace;">—</div>
+          <div id="code-statut" style="font-size:11px;color:var(--gris3);margin-top:6px;"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <input type="text" id="input-code-admin" placeholder="Saisir un code personnalisé" maxlength="10"
+            style="flex:1;border:1px solid var(--gris2);border-radius:6px;padding:10px 12px;font-size:14px;color:var(--texte);outline:none;text-transform:uppercase;letter-spacing:2px;"
+            oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="definirCode()" style="flex:1;background:var(--vert);color:var(--blanc);border:none;padding:12px;border-radius:6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;">Appliquer ce code</button>
+          <button onclick="genererCodeAuto()" style="flex:1;background:var(--noir);color:var(--blanc);border:none;padding:12px;border-radius:6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;">↺ Générer aléatoire</button>
+        </div>
+        <button onclick="supprimerCode()" style="width:100%;margin-top:10px;background:transparent;border:1px solid var(--gris2);color:var(--gris3);padding:10px;border-radius:6px;font-size:12px;cursor:pointer;">Désactiver le code (accès libre)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE MENU -->
+  <div class="page visible" id="page-menu">
+    <div id="contenu-menu-admin"></div>
+  </div>
+
+  <!-- PAGE HISTORIQUE -->
+  <div class="page" id="page-historique">
+    <div class="hist-toolbar">
+      <div>
+        <label>Période</label>
+        <select id="hist-type" onchange="mettreAJourInputDate()">
+          <option value="jour">Jour</option>
+          <option value="semaine">Semaine</option>
+          <option value="mois">Mois</option>
+        </select>
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="hist-date">
+      </div>
+      <button class="btn-rechercher" onclick="chargerHistorique()">Rechercher</button>
+    </div>
+    <div id="contenu-historique"><p style="color:var(--gris);text-align:center;padding:40px;">Sélectionnez une période et cliquez sur Rechercher</p></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT PLAT -->
+<div class="modal-bg" id="modal-edit">
+  <div class="modal-edit">
+    <h3 id="modal-edit-titre">Modifier le plat</h3>
+    <input type="hidden" id="edit-cat-id">
+    <input type="hidden" id="edit-plat-idx">
+    <div class="form-group">
+      <label>Nom du plat</label>
+      <input type="text" id="edit-nom">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="edit-desc" rows="2"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Prix (€)</label>
+        <input type="number" id="edit-prix" step="0.10" min="0">
+      </div>
+      <div class="form-group">
+        <label>Plat du jour ?</label>
+        <select id="edit-jour">
+          <option value="false">Non</option>
+          <option value="true">Oui</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Stock (vide = illimité)</label>
+        <input type="number" id="edit-stock" min="0" placeholder="ex: 10">
+      </div>
+      <div class="form-group">
+        <label>Remettre à zéro</label>
+        <button type="button" onclick="reinitStock()" style="width:100%;background:#f0ebe0;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;color:var(--noir);">↺ Reset stock</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Choix de cuisson</label>
+      <select id="edit-cuisson" style="width:100%;border:1px solid var(--gris2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--texte);outline:none;">
+        <option value="false">Non — pas de choix de cuisson</option>
+        <option value="true">Oui — demander la cuisson au convive</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-annuler" onclick="fermerModalEdit()">Annuler</button>
+      <button class="btn-sauvegarder" onclick="sauvegarderPlat()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let token = sessionStorage.getItem('admin_token') || '';
+  let menuAdmin = [];
+
+  // ── AUTH ──
+  async function seConnecter() {
+    const mdp = document.getElementById('input-mdp').value;
+    const r = await fetch('/api/admin/menu', { headers: { 'Authorization': 'Bearer ' + mdp } });
+    if (r.ok) {
+      token = mdp;
+      sessionStorage.setItem('admin_token', token);
+      menuAdmin = await r.json();
+      document.getElementById('ecran-login').style.display = 'none';
+      document.getElementById('ecran-app').style.display = 'block';
+      construireMenuAdmin();
+      mettreAJourInputDate();
+      connecterWS();
+    } else {
+      document.getElementById('msg-login').textContent = 'Mot de passe incorrect';
+    }
+  }
+
+  function seDeconnecter() {
+    sessionStorage.removeItem('admin_token');
+    token = '';
+    document.getElementById('ecran-app').style.display = 'none';
+    document.getElementById('ecran-login').style.display = 'flex';
+    document.getElementById('input-mdp').value = '';
+  }
+
+  // Vérifier si déjà connecté
+  if (token) {
+    fetch('/api/admin/menu', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          menuAdmin = data;
+          document.getElementById('ecran-login').style.display = 'none';
+          document.getElementById('ecran-app').style.display = 'block';
+          construireMenuAdmin();
+          mettreAJourInputDate();
+        }
+      });
+  }
+
+  // ── MENU ──
+  function estPlancha(cat) { return (cat.categorie||'').toLowerCase().includes('plancha'); }
+
+  function construireMenuAdmin() {
+    const cont = document.getElementById('contenu-menu-admin');
+    cont.innerHTML = menuAdmin.map((cat, ci) => `
+      <div class="cat-card">
+        <div class="cat-header">
+          <div>
+            <div class="cat-titre">${cat.categorie}</div>
+            ${cat.service ? `<div class="cat-service">${cat.service}</div>` : ''}
+          </div>
+        </div>
+        ${cat.plats.map((plat, pi) => `
+          <div class="plat-row">
+            <div class="plat-infos">
+              <div class="plat-row-nom">${plat.nom}</div>
+              ${plat.description ? `<div class="plat-row-desc">${plat.description}</div>` : ''}
+            </div>
+            <div class="plat-row-prix">${plat.prix.toFixed(2).replace('.', ',')} €</div>
+            <div class="stock-badge ${plat.stock === 0 ? 'epuise' : ''}" title="Stock restant">
+              ${plat.stock !== undefined && plat.stock !== null ? plat.stock + ' restant' + (plat.stock > 1 ? 's' : '') : '∞'}
+            </div>
+            <button class="badge-cuisson-toggle ${plat.cuisson ? 'on' : 'off'}" onclick="toggleCuisson('${cat._id}', ${pi}, this)">${plat.cuisson ? '🔥 Cuisson' : 'Cuisson'}</button>
+            <button class="badge-jour-toggle ${plat.plat_du_jour ? 'on' : 'off'}" onclick="toggleJour('${cat._id}', ${pi}, this)">${plat.plat_du_jour ? 'Du jour' : 'Fixe'}</button>
+            <button class="toggle-actif ${plat.actif ? 'on' : 'off'}" onclick="toggleActif('${cat._id}', ${pi}, this)"></button>
+            <button class="btn-edit-plat" onclick="ouvrirEdit('${cat._id}', ${pi})">✎</button>
+          </div>
+        `).join('')}
+        <button class="btn-add-plat" onclick="ouvrirNouveauPlat('${cat._id}')">+ Ajouter un plat</button>
+
+        ${estPlancha(cat) ? `
+        <div style="border-top:2px solid var(--gris1);margin:4px 0 0;">
+          <div style="padding:12px 16px;background:#fafafa;">
+            <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gris3);margin-bottom:12px;font-weight:500;">🥬 Garnitures & Sauces</div>
+
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11px;color:var(--gris3);margin-bottom:6px;">Garnitures (séparées par ·)</div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="garnitures-${cat._id}" value="${(cat.notes&&cat.notes[0])?cat.notes[0].texte:''}"
+                  style="flex:1;border:1px solid var(--gris2);border-radius:6px;padding:8px 12px;font-size:13px;outline:none;"
+                  placeholder="Grenailles au four · Boulgour · Petits pois · Carotte">
+                <button onclick="sauvegarderNotes('${cat._id}')"
+                  style="background:var(--vert);color:var(--blanc);border:none;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:500;">
+                  Sauvegarder
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:11px;color:var(--gris3);margin-bottom:6px;">Sauces (séparées par ·)</div>
+              <input type="text" id="sauces-${cat._id}" value="${(cat.notes&&cat.notes[1])?cat.notes[1].texte:''}"
+                style="width:100%;border:1px solid var(--gris2);border-radius:6px;padding:8px 12px;font-size:13px;outline:none;"
+                placeholder="Sauce vierge · Sauce au bleu">
+            </div>
+          </div>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  async function sauvegarderNotes(catId) {
+    const garnitures = document.getElementById('garnitures-' + catId).value.trim();
+    const sauces = document.getElementById('sauces-' + catId).value.trim();
+    const notes = [
+      { titre: 'Garnitures au choix', texte: garnitures },
+      { titre: 'Sauce au choix', texte: sauces }
+    ];
+    await fetch('/api/admin/menu/' + catId + '/notes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ notes })
+    });
+    // Mettre à jour localement
+    const cat = menuAdmin.find(c => c._id === catId);
+    if (cat) cat.notes = notes;
+    afficherToast('Garnitures & sauces sauvegardées ✓');
+  }
+    const cat = menuAdmin.find(c => c._id === catId);
+    if (!cat) return;
+    cat.plats[platIdx].actif = !cat.plats[platIdx].actif;
+    btn.className = 'toggle-actif ' + (cat.plats[platIdx].actif ? 'on' : 'off');
+    await fetch('/api/admin/menu/' + catId + '/plat/' + platIdx, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(cat.plats[platIdx])
+    });
+    afficherToast(cat.plats[platIdx].actif ? 'Plat affiché ✓' : 'Plat masqué ✓');
+  }
+
+  async function toggleJour(catId, platIdx, btn) {
+    const cat = menuAdmin.find(c => c._id === catId);
+    if (!cat) return;
+    cat.plats[platIdx].plat_du_jour = !cat.plats[platIdx].plat_du_jour;
+    btn.className = 'badge-jour-toggle ' + (cat.plats[platIdx].plat_du_jour ? 'on' : 'off');
+    btn.textContent = cat.plats[platIdx].plat_du_jour ? 'Du jour' : 'Fixe';
+    await fetch('/api/admin/menu/' + catId + '/plat/' + platIdx, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(cat.plats[platIdx])
+    });
+    afficherToast('Mis à jour ✓');
+  }
+
+  async function toggleCuisson(catId, platIdx, btn) {
+    const cat = menuAdmin.find(c => c._id === catId);
+    if (!cat) return;
+    cat.plats[platIdx].cuisson = !cat.plats[platIdx].cuisson;
+    btn.className = 'badge-cuisson-toggle ' + (cat.plats[platIdx].cuisson ? 'on' : 'off');
+    btn.textContent = cat.plats[platIdx].cuisson ? '🔥 Cuisson' : 'Cuisson';
+    await fetch('/api/admin/menu/' + catId + '/plat/' + platIdx, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(cat.plats[platIdx])
+    });
+    afficherToast(cat.plats[platIdx].cuisson ? 'Choix de cuisson activé ✓' : 'Choix de cuisson désactivé ✓');
+  }
+
+  function ouvrirEdit(catId, platIdx) {
+    const cat = menuAdmin.find(c => c._id === catId);
+    if (!cat) return;
+    const plat = cat.plats[platIdx];
+    document.getElementById('edit-cat-id').value = catId;
+    document.getElementById('edit-plat-idx').value = platIdx;
+    document.getElementById('edit-nom').value = plat.nom;
+    document.getElementById('edit-desc').value = plat.description || '';
+    document.getElementById('edit-prix').value = plat.prix;
+    document.getElementById('edit-jour').value = plat.plat_du_jour ? 'true' : 'false';
+    document.getElementById('edit-stock').value = (plat.stock !== undefined && plat.stock !== null) ? plat.stock : '';
+    document.getElementById('edit-cuisson').value = plat.cuisson ? 'true' : 'false';
+    document.getElementById('modal-edit-titre').textContent = 'Modifier — ' + plat.nom;
+    document.getElementById('modal-edit').classList.add('open');
+  }
+
+  function reinitStock() {
+    const stockInput = document.getElementById('edit-stock');
+    const valOrigine = stockInput.getAttribute('data-original') || '';
+    stockInput.value = valOrigine;
+    afficherToast('Stock remis à la valeur initiale');
+  }
+
+  function ouvrirNouveauPlat(catId) {
+    document.getElementById('edit-cat-id').value = catId;
+    document.getElementById('edit-plat-idx').value = '-1';
+    document.getElementById('edit-nom').value = '';
+    document.getElementById('edit-desc').value = '';
+    document.getElementById('edit-prix').value = '';
+    document.getElementById('edit-jour').value = 'false';
+    document.getElementById('edit-stock').value = '';
+    document.getElementById('edit-cuisson').value = 'false';
+    document.getElementById('modal-edit-titre').textContent = 'Nouveau plat';
+    document.getElementById('modal-edit').classList.add('open');
+  }
+
+  function fermerModalEdit() { document.getElementById('modal-edit').classList.remove('open'); }
+
+  async function sauvegarderPlat() {
+    const catId = document.getElementById('edit-cat-id').value;
+    const platIdx = parseInt(document.getElementById('edit-plat-idx').value);
+    const stockVal = document.getElementById('edit-stock').value;
+    const plat = {
+      nom: document.getElementById('edit-nom').value.trim(),
+      description: document.getElementById('edit-desc').value.trim(),
+      prix: parseFloat(document.getElementById('edit-prix').value),
+      plat_du_jour: document.getElementById('edit-jour').value === 'true',
+      cuisson: document.getElementById('edit-cuisson').value === 'true',
+      stock: stockVal !== '' ? parseInt(stockVal) : null,
+      actif: true
+    };
+    if (!plat.nom || isNaN(plat.prix)) { alert('Nom et prix obligatoires'); return; }
+    // Le plat reste toujours actif — c'est le stock=0 qui bloque la commande
+
+    if (platIdx === -1) {
+      await fetch('/api/admin/menu/' + catId + '/plat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(plat)
+      });
+    } else {
+      const cat = menuAdmin.find(c => c._id === catId);
+      plat.actif = cat.plats[platIdx].actif;
+      await fetch('/api/admin/menu/' + catId + '/plat/' + platIdx, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(plat)
+      });
+    }
+
+    fermerModalEdit();
+    const r = await fetch('/api/admin/menu', { headers: { 'Authorization': 'Bearer ' + token } });
+    menuAdmin = await r.json();
+    construireMenuAdmin();
+    afficherToast('Sauvegardé ✓');
+  }
+
+  // ── HISTORIQUE ──
+  function mettreAJourInputDate() {
+    const type = document.getElementById('hist-type').value;
+    const input = document.getElementById('hist-date');
+    input.type = type === 'mois' ? 'month' : 'date';
+    input.value = type === 'mois'
+      ? new Date().toISOString().slice(0, 7)
+      : new Date().toISOString().split('T')[0];
+  }
+
+  async function chargerHistorique() {
+    const type = document.getElementById('hist-type').value;
+    const valeur = document.getElementById('hist-date').value;
+    if (!valeur) return;
+
+    let url, label;
+    if (type === 'jour') { url = '/api/historique/jour/' + valeur; label = 'du ' + valeur; }
+    else if (type === 'semaine') { url = '/api/historique/semaine/' + getSemaineFromDate(valeur); label = 'semaine du ' + valeur; }
+    else { url = '/api/historique/mois/' + valeur; label = 'de ' + valeur; }
+
+    const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    const { commandes, stats } = await r.json();
+    afficherHistorique(commandes, stats, label);
+  }
+
+  function afficherHistorique(commandes, stats, label) {
+    const cont = document.getElementById('contenu-historique');
+    if (!commandes.length) {
+      cont.innerHTML = '<p style="color:var(--gris);text-align:center;padding:40px;">Aucune commande ' + label + '</p>';
+      return;
+    }
+    cont.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-valeur">${stats.nb_commandes}</div><div class="stat-label">Commandes</div></div>
+        <div class="stat-card"><div class="stat-valeur">${stats.ca.toFixed(2).replace('.', ',')} €</div><div class="stat-label">Chiffre d'affaires</div></div>
+        <div class="stat-card"><div class="stat-valeur">${stats.nb_commandes ? (stats.ca / stats.nb_commandes).toFixed(2).replace('.', ',') + ' €' : '—'}</div><div class="stat-label">Panier moyen</div></div>
+      </div>
+      <div class="top-plats">
+        <h3>Top plats commandés</h3>
+        ${stats.top_plats.map((p, i) => `
+          <div class="top-plat-row">
+            <span>${i + 1}. ${p.nom}</span>
+            <div class="top-plat-qty">${p.qty}</div>
+          </div>`).join('')}
+      </div>
+      <div class="commandes-list">
+        <h3>Détail des commandes (${commandes.length})</h3>
+        ${commandes.map(c => `
+          <div class="cmd-row">
+            <div class="cmd-row-header">
+              <span class="cmd-table">Table ${c.table}</span>
+              <span class="cmd-heure">${c.heure}</span>
+              <span class="cmd-total">${(c.total || 0).toFixed(2).replace('.', ',')} €</span>
+            </div>
+            <div class="cmd-items">${(c.items || []).map(i => i.qty + '× ' + i.nom).join(' — ')}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  function getSemaineFromDate(dateStr) {
+    const d = new Date(dateStr);
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    const week1 = new Date(d.getFullYear(), 0, 4);
+    const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    return d.getFullYear() + '-S' + String(weekNum).padStart(2, '0');
+  }
+
+  function afficherPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('visible');
+    btn.classList.add('active');
+    if (id === 'code') chargerCode();
+  }
+
+  // ── Gestion du code du jour ──
+  async function chargerCode() {
+    const r = await fetch('/api/admin/code', { headers: { 'Authorization': 'Bearer ' + token } });
+    const { code } = await r.json();
+    afficherCode(code);
+  }
+
+  function afficherCode(code) {
+    document.getElementById('code-valeur').textContent = code || '—';
+    document.getElementById('code-statut').textContent = code
+      ? 'Code actif — les convives doivent le saisir pour accéder au menu'
+      : 'Aucun code — accès libre pour tous';
+    document.getElementById('code-valeur').style.color = code ? 'var(--vert)' : 'var(--gris3)';
+  }
+
+  async function definirCode() {
+    const code = document.getElementById('input-code-admin').value.trim().toUpperCase();
+    if (!code) { afficherToast('Saisissez un code'); return; }
+    const r = await fetch('/api/admin/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ code })
+    });
+    const { code: newCode } = await r.json();
+    afficherCode(newCode);
+    document.getElementById('input-code-admin').value = '';
+    afficherToast('Code appliqué : ' + newCode);
+  }
+
+  async function genererCodeAuto() {
+    const r = await fetch('/api/admin/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ code: '' })
+    });
+    const { code } = await r.json();
+    afficherCode(code);
+    afficherToast('Code généré : ' + code);
+  }
+
+  async function supprimerCode() {
+    if (!confirm('Désactiver le code ? Tout le monde pourra accéder au menu.')) return;
+    await fetch('/api/admin/code', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    afficherCode('');
+    afficherToast('Code désactivé — accès libre');
+  }
+
+  function afficherToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('visible');
+    setTimeout(() => t.classList.remove('visible'), 2500);
+  }
+
+  document.getElementById('modal-edit').addEventListener('click', function(e) {
+    if (e.target === this) fermerModalEdit();
+  });
+
+  document.getElementById('input-mdp').addEventListener('keydown', e => {
+    if (e.key === 'Enter') seConnecter();
+  });
+
+  // ── WebSocket — mise à jour en temps réel du menu admin ──
+  let wsAdmin = null;
+  function connecterWS() {
+    if (!token) return;
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    wsAdmin = new WebSocket(proto + '://' + location.host + '?role=admin');
+    wsAdmin.onmessage = async (evt) => {
+      const msg = JSON.parse(evt.data);
+      if (msg.type === 'menu_mis_a_jour') {
+        const r = await fetch('/api/admin/menu', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (r.ok) {
+          menuAdmin = await r.json();
+          construireMenuAdmin();
+        }
+      }
+    };
+    wsAdmin.onclose = () => setTimeout(connecterWS, 3000);
+  }
+
+  // Lancer la connexion WebSocket si déjà connecté au chargement
+  if (token) connecterWS();
+</script>
+</body>
+</html>
