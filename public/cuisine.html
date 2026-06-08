@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuisine — Le 37 Partners Lounge Partners Lounge</title>
+<style>
+  :root { --vert:#87BE25; --vert2:#6fa01e; --noir:#000000; --blanc:#FFFFFF; --bleu:#1076A8; --gris1:#f5f5f5; --gris2:#e0e0e0; --gris3:#888; --rouge:#e74c3c; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; color:var(--blanc); font-family:'Arial',sans-serif; min-height:100vh; }
+
+  header { background:var(--blanc); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--vert); position:sticky; top:0; z-index:10; }
+  header h1 { font-size:16px; color:var(--vert); letter-spacing:3px; text-transform:uppercase; font-weight:700; }
+  #statut-ws { font-size:11px; padding:4px 12px; border-radius:4px; font-weight:500; letter-spacing:1px; }
+  #statut-ws.connecte { background:rgba(135,190,37,0.2); color:var(--vert); border:1px solid var(--vert); }
+  #statut-ws.deconnecte { background:rgba(231,76,60,0.2); color:var(--rouge); border:1px solid var(--rouge); }
+
+  .toolbar { padding:10px 20px; background:#1a1a1a; display:flex; gap:10px; align-items:center; border-bottom:1px solid #222; }
+  #compteur { font-size:13px; color:var(--gris3); letter-spacing:1px; }
+  #compteur strong { color:var(--vert); }
+  .btn-reset { margin-left:auto; background:rgba(231,76,60,0.15); color:var(--rouge); border:1px solid var(--rouge); padding:6px 16px; border-radius:4px; cursor:pointer; font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:500; }
+  .btn-reset:hover { background:var(--rouge); color:var(--blanc); }
+
+  #zone-commandes { padding:16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  .vide { grid-column:1/-1; text-align:center; padding:80px 20px; color:#333; font-size:14px; letter-spacing:1px; }
+  .vide span { display:block; font-size:40px; margin-bottom:16px; }
+
+  .carte { background:#1a1a1a; border-radius:10px; border:1px solid #222; overflow:hidden; animation:apparition 0.4s ease; }
+  @keyframes apparition { from { opacity:0; transform:translateY(-8px); } }
+  .carte.nouvelle { border-color:var(--vert); }
+  .carte.en_cours { border-color:var(--bleu); }
+  .carte.servie { border-color:#333; opacity:0.5; }
+
+  .carte-header { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; background:#111; }
+  .carte-table { font-size:20px; font-weight:700; color:var(--blanc); letter-spacing:1px; }
+  .carte-heure { font-size:11px; color:var(--gris3); letter-spacing:1px; }
+  .carte-statut { font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:3px 10px; border-radius:3px; font-weight:500; }
+  .statut-nouvelle { background:rgba(135,190,37,0.2); color:var(--vert); border:1px solid var(--vert); }
+  .statut-en_cours { background:rgba(16,118,168,0.2); color:var(--bleu); border:1px solid var(--bleu); }
+  .statut-servie { background:#222; color:var(--gris3); }
+
+  .carte-items { padding:14px 16px; }
+  .item-ligne { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #222; font-size:14px; }
+  .item-ligne:last-child { border-bottom:none; }
+  .item-qty { background:var(--vert); color:var(--blanc); width:30px; height:30px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; }
+  .item-nom { flex:1; color:#fff; font-size:16px; font-weight:500; padding-left:20px; }
+
+  .carte-footer { padding:10px 16px; background:#111; display:flex; gap:8px; }
+  .btn-action { flex:1; padding:9px; border:none; border-radius:6px; cursor:pointer; font-size:11px; letter-spacing:1.5px; font-weight:600; text-transform:uppercase; transition:opacity 0.2s; }
+  .btn-action:hover { opacity:0.85; }
+  .btn-encours { background:var(--bleu); color:var(--blanc); }
+  .btn-servie { background:var(--vert); color:var(--blanc); }
+  .btn-sup { background:#2a2a2a; color:var(--gris3); flex:0; padding:9px 14px; font-size:12px; letter-spacing:0; }
+
+  #alerte { position:fixed; top:70px; right:20px; background:var(--vert); color:var(--blanc); padding:12px 20px; border-radius:6px; font-weight:600; font-size:14px; display:none; z-index:999; letter-spacing:1px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍳 Cuisine — Le 37 Partners Lounge</h1>
+  <span id="statut-ws" class="deconnecte">Déconnecté</span>
+</header>
+<div class="toolbar">
+  <span id="compteur"><strong>0</strong> commande(s) en attente</span>
+  <button class="btn-reset" onclick="confirmerReset()">↺ Fin de service</button>
+</div>
+<div id="zone-commandes">
+  <div class="vide"><span>🍽</span>En attente de commandes…</div>
+</div>
+<div id="alerte">🔔 Nouvelle commande !</div>
+
+<script>
+  let commandes = {};
+  let ws;
+
+  function connecter() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(proto + '://' + location.host + '?role=cuisine');
+    ws.onopen = () => {
+      document.getElementById('statut-ws').textContent = '● Connecté';
+      document.getElementById('statut-ws').className = 'connecte';
+    };
+    ws.onclose = () => {
+      document.getElementById('statut-ws').textContent = '● Déconnecté';
+      document.getElementById('statut-ws').className = 'deconnecte';
+      setTimeout(connecter, 3000);
+    };
+    ws.onmessage = (evt) => {
+      const msg = JSON.parse(evt.data);
+      if (msg.type === 'historique') { commandes = {}; msg.commandes.forEach(c => { commandes[c.id] = c; }); afficher(); }
+      if (msg.type === 'nouvelle_commande') { commandes[msg.commande.id] = msg.commande; afficher(); jouerAlerte(); }
+      if (msg.type === 'maj_statut') { if (commandes[msg.id]) { commandes[msg.id].statut = msg.statut; afficher(); } }
+      if (msg.type === 'reinitialisation') { commandes = {}; afficher(); }
+    };
+  }
+
+  function afficher() {
+    const zone = document.getElementById('zone-commandes');
+    const liste = Object.values(commandes).filter(c => c.statut !== 'servie' || Date.now() - c.id < 120000).sort((a,b) => a.id - b.id);
+    const enAttente = Object.values(commandes).filter(c => c.statut === 'nouvelle').length;
+    document.getElementById('compteur').innerHTML = '<strong>' + enAttente + '</strong> commande(s) en attente';
+    if (liste.length === 0) { zone.innerHTML = '<div class="vide"><span>🍽</span>En attente de commandes…</div>'; return; }
+    zone.innerHTML = liste.map(c => `
+      <div class="carte ${c.statut}">
+        <div class="carte-header">
+          <div><div class="carte-table">Chevalet ${c.table}</div><div class="carte-heure">${c.heure}</div></div>
+          <span class="carte-statut statut-${c.statut}">${labelStatut(c.statut)}</span>
+        </div>
+        <div class="carte-items">
+          ${c.items.map(i => `<div class="item-ligne"><div class="item-qty">${i.qty}</div><div class="item-nom">${i.nom}</div></div>`).join('')}
+        </div>
+        <div class="carte-footer">
+          ${c.statut === 'nouvelle' ? `<button class="btn-action btn-encours" onclick="changerStatut(${c.id},'en_cours')">En cours</button>` : ''}
+          ${c.statut === 'en_cours' ? `<button class="btn-action btn-servie" onclick="changerStatut(${c.id},'servie')">✓ Servie</button>` : ''}
+          ${c.statut === 'servie' ? `<button class="btn-action btn-servie" disabled>✓ Servie</button>` : ''}
+          <button class="btn-action btn-sup" onclick="changerStatut(${c.id},'servie')">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function labelStatut(s) { return {nouvelle:'● Nouvelle',en_cours:'● En cours',servie:'● Servie'}[s]||s; }
+  function changerStatut(id, statut) { fetch('/commande/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({statut})}); }
+
+  // Son d'alerte via Web Audio API
+  function jouerSon() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // 3 bips courts et montants
+      [0, 0.18, 0.36].forEach((t, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520 + i * 120, ctx.currentTime + t);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime + t + 0.15);
+      });
+    } catch(e) {}
+  }
+
+  function jouerAlerte() {
+    const a = document.getElementById('alerte');
+    a.style.display = 'block';
+    setTimeout(() => { a.style.display = 'none'; }, 3000);
+    jouerSon();
+  }
+
+  function confirmerReset() { if(confirm('Effacer toutes les commandes ?')) fetch('/commandes',{method:'DELETE'}); }
+
+  connecter();
+</script>
+</body>
+</html>
