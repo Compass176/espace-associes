@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code — Le 37 Partners Lounge</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root { --vert:#87BE25; --vert2:#6fa01e; --noir:#000000; --blanc:#FFFFFF; --gris1:#f5f5f5; --gris2:#e0e0e0; --gris3:#888; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--gris1); color:var(--noir); font-family:'Montserrat',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; gap:24px; }
+
+  /* Bouton imprimer visible en haut */
+  .toolbar { width:100%; max-width:340px; display:flex; justify-content:flex-end; }
+  .btn-imprimer { background:var(--vert); color:var(--blanc); border:none; padding:10px 20px; border-radius:6px; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'Montserrat',sans-serif; font-weight:500; transition:background 0.2s; }
+  .btn-imprimer:hover { background:var(--vert2); }
+
+  /* Carte QR */
+  .carte-qr { background:var(--blanc); border-radius:16px; padding:32px 28px 28px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:1px solid var(--gris2); max-width:320px; width:100%; }
+
+  .titre-bloc { font-family:'Playfair Display',serif; font-weight:400; text-align:center; margin-bottom:4px; }
+  .titre-grand { font-size:46px; display:block; line-height:1; color:var(--noir); }
+  .titre-grand span { color:var(--vert); }
+  .titre-petit { font-size:10px; display:block; letter-spacing:6px; text-transform:uppercase; font-weight:300; margin-top:6px; font-family:'Montserrat',sans-serif; color:var(--gris3); max-width:120px; margin-left:auto; margin-right:auto; }
+
+  .menu-label { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--vert); font-weight:500; margin:16px 0 20px; display:block; }
+
+  .ligne-sep { width:40px; height:2px; background:var(--vert); margin:0 auto 20px; }
+
+  .qr-box { display:flex; justify-content:center; margin-bottom:20px; padding:12px; background:var(--gris1); border-radius:10px; }
+
+  .invite-texte { font-size:11px; color:var(--gris3); line-height:1.7; font-weight:300; letter-spacing:0.5px; }
+
+  @media print {
+    body { background:#fff; padding:10px; justify-content:center; }
+    .toolbar { display:none; }
+    .carte-qr { box-shadow:none; border:1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn-imprimer" onclick="window.print()">🖨 Imprimer</button>
+</div>
+
+<div class="carte-qr">
+  <img src="data:image/png;base64,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" alt="Le 37 Partners Lounge" style="width:140px;max-width:70%;margin:0 auto 4px;display:block;">
+  <span class="menu-label">Menu</span>
+  <div class="ligne-sep"></div>
+  <div class="qr-box" id="qr-unique"></div>
+  <p class="invite-texte">Scannez ce QR code avec votre téléphone<br>et passez commande directement.</p>
+</div>
+
+<script>
+  const today = new Date();
+  const j = today.getFullYear().toString() +
+    String(today.getMonth() + 1).padStart(2, '0') +
+    String(today.getDate()).padStart(2, '0');
+
+  const urlBase = window.location.origin;
+  const urlQR = urlBase + '/?j=' + j;
+
+  // Afficher la date sur la carte
+  const dateStr = today.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const dateEl = document.createElement('p');
+  dateEl.style.cssText = 'font-size:10px;color:var(--gris3);letter-spacing:1px;margin-top:14px;text-transform:capitalize;';
+  dateEl.textContent = dateStr;
+  document.querySelector('.carte-qr').appendChild(dateEl);
+
+  new QRCode(document.getElementById('qr-unique'), {
+    text:         urlQR,
+    width:        200,
+    height:       200,
+    colorDark:    '#000000',
+    colorLight:   '#f5f5f5',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+</script>
+</body>
+</html>
